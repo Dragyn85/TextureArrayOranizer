@@ -1,0 +1,8 @@
+{
+  "name": "com.dragyngames.texturearraytool",
+  "displayName": "Texture Array Tool",
+  "version": "1.0.0",
+  "description": "Create Texture arrays assets for Unity. Includes a shader to use the texture arrays.",
+  "license": "MIT"
+}
+
