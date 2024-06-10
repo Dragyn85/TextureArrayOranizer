@@ -2,38 +2,45 @@
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace DragynGames.Editor.Texture
 {
-    public class PBRTextureArrayCreator : ScriptableWizard
+    public class PBRTextureArrayCreator 
     {
-        [MenuItem("Window/PBR Texture Array Creator")]
-        public static void ShowWindow()
+        private static string path = "Assets/";
+        private static string filename = "MyTextureArray";
+
+        public static PBRTextureSettings textureSettings;
+
+        //private ReorderableList list;
+        
+        public static void Create(PBRTextureSettings settings)
         {
-            DisplayWizard<PBRTextureArrayCreator>("Create Texture Array", "Build Asset");
+            textureSettings = settings;
+            OnWizardCreate();
+        }
+        static void OnWizardCreate()
+        {
+            path = textureSettings.path;
+            filename = textureSettings.filename;
+            if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(filename))
+            {
+                Debug.LogError("You need to enter a path or filename in the texture settings asset.");
+                return;
+            }
+            ExtractAllTexturs();
         }
 
-        public string path = "Assets/";
-        public string filename = "MyTextureArray";
-
-        public PBRTextureSettings textureSettingss;
-
-        private ReorderableList list;
-
-        void OnWizardCreate()
-        {
-            ExtractAlbido();
-        }
-
-        private void ExtractAlbido()
+        private static void ExtractAllTexturs()
         {
             OutputAlbido();
-            if (textureSettingss.OutputNormals)
+            if (textureSettings.OutputNormals)
             {
                 OutputNormalMaps();
             }
 
-            if (textureSettingss.IgnorePBRTexures)
+            if (textureSettings.IgnorePBRTexures)
             {
                 OutputSeparatePbr();
             }
@@ -43,46 +50,46 @@ namespace DragynGames.Editor.Texture
             }
         }
 
-        private void OutputPbrCombo()
+        private static void OutputPbrCombo()
         {
             List<Texture2D> combinedTextures = new();
-            foreach (var set in textureSettingss.sets)
+            foreach (var set in textureSettings.sets)
             {
                 combinedTextures.Add(set.CombinedMetallicRoughnessAmbienOccolusion);
             }
 
-            CompileArray(combinedTextures, path, $"PBR_{filename}");
+            ExportArray(combinedTextures, path, $"{filename}_ORM");
         }
 
-        private void OutputAlbido()
+        private static void OutputAlbido()
         {
             List<Texture2D> AlbitoTextures = new List<Texture2D>();
-            foreach (var set in textureSettingss.sets)
+            foreach (var set in textureSettings.sets)
             {
                 AlbitoTextures.Add(set.Albido);
             }
 
-            CompileArray(AlbitoTextures, path, $"Albido_{filename}");
+            ExportArray(AlbitoTextures, path, $"{filename}_Albedos");
         }
 
-        private void OutputNormalMaps()
+        private static void OutputNormalMaps()
         {
             List<Texture2D> normalTextures = new List<Texture2D>();
-            foreach (var set in textureSettingss.sets)
+            foreach (var set in textureSettings.sets)
             {
                 normalTextures.Add(set.Normal);
             }
 
-            CompileArray(normalTextures, path, $"Normal_{filename}", true);
+            ExportArray(normalTextures, path, $"{filename}_Normals", true);
         }
 
-        private void OutputSeparatePbr()
+        private static void OutputSeparatePbr()
         {
             List<Texture2D> metalicTextures = new List<Texture2D>();
             List<Texture2D> roughnessTextures = new List<Texture2D>();
             List<Texture2D> AmbientOccolusion = new List<Texture2D>();
 
-            foreach (var set in textureSettingss.sets)
+            foreach (var set in textureSettings.sets)
             {
                 var metTexture = new Texture2D(set.Metallic.width, set.Metallic.height);
                 metTexture.SetPixels(set.Metallic.GetPixels(0));
@@ -96,16 +103,16 @@ namespace DragynGames.Editor.Texture
             }
 
 
-            if (!textureSettingss.CombinePbrTextures)
+            if (!textureSettings.CombinePbrTextures)
             {
-                CompileArray(metalicTextures, path, $"Metallic_{filename}");
-                CompileArray(roughnessTextures, path, $"Roughness_{filename}");
-                CompileArray(AmbientOccolusion, path, $"AO_{filename}");
+                ExportArray(metalicTextures, path, $"{filename}_Metallic");
+                ExportArray(roughnessTextures, path, $"{filename}_Rooughness");
+                ExportArray(AmbientOccolusion, path, $"{filename}_AmbientOccolusion");
             }
             else
             {
                 List<Texture2D> combinedTextures = new();
-                for (int i = 0; i < textureSettingss.sets.Count; i++)
+                for (int i = 0; i < textureSettings.sets.Count; i++)
                 {
                     Texture2D combinedMetallicRoughnessAmbienOccolusion = new Texture2D(metalicTextures[0].width,
                         metalicTextures[0].height, TextureFormat.RGBA32, false);
@@ -123,43 +130,14 @@ namespace DragynGames.Editor.Texture
 
                     combinedMetallicRoughnessAmbienOccolusion.Apply();
                     combinedTextures.Add(combinedMetallicRoughnessAmbienOccolusion);
-                    //string uri = path + filename + ".asset";
-                    //AssetDatabase.CreateAsset(combinedMetallicRoughnessAmbienOccolusion, uri);
-                    //Debug.Log("Saved asset to " + uri);
                 }
 
-                CompileArray(combinedTextures, path, $"PBR_{filename}");
+                ExportArray(combinedTextures, path, $"{filename}_ORM");
             }
         }
 
-        /*private void CompileArray(List<Texture2D> textures, string path, string filename)
-        {
-            if (textures == null || textures.Count == 0)
-            {
-                Debug.LogError("No textures assigned");
-                return;
-            }
-
-            Texture2D sample = textures[0];
-            Texture2DArray textureArray =
-                new Texture2DArray(sample.width, sample.height, textures.Count, sample.format, false);
-            textureArray.filterMode = FilterMode.Trilinear;
-            textureArray.wrapMode = TextureWrapMode.Repeat;
-
-            for (int i = 0; i < textures.Count; i++)
-            {
-                Texture2D tex = textures[i];
-                Color[] colors = tex.GetPixels();
-                textureArray.SetPixels(colors, i, 0);
-            }
-
-            textureArray.Apply();
-
-            string uri = path + filename + ".asset";
-            AssetDatabase.CreateAsset(textureArray, uri);
-            Debug.Log("Saved asset to " + uri);
-        }*/
-        private void CompileArray(List<Texture2D> textures, string path, string filename, bool isNormalMap = false)
+        
+        private static void ExportArray(List<Texture2D> textures, string path, string filename, bool isNormalMap = false)
         {
             if (textures == null || textures.Count == 0)
             {
@@ -194,7 +172,7 @@ namespace DragynGames.Editor.Texture
             Debug.Log("Saved asset to " + uri);
         }
 
-        private Texture2D ConvertToNormalMap(Texture2D source)
+        private static Texture2D ConvertToNormalMap(Texture2D source)
         {
             // Ensure the texture is readable
             Texture2D normalMap = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);

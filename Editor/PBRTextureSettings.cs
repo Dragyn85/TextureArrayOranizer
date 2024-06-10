@@ -7,6 +7,9 @@ namespace DragynGames.Editor.Texture
     [CreateAssetMenu(fileName = "PBRTextureSettings", menuName = "Art/PBRTextureSettings")]
     public class PBRTextureSettings : ScriptableObject
     {
+        public string path = "Assets/";
+        public string filename = "MyTextureArray";
+        
         public List<PBRTextureSet> sets;
         public bool CombinePbrTextures;
         public bool IgnorePBRTexures;
