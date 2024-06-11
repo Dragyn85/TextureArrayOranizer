@@ -15,10 +15,14 @@ The textures can then easily be converted into Texture arrays for optimicing ren
 3. Select a filename for the Texture array output.
 4. Expand the sets List and add a new set with the + button.
 5. Add the different textures to the set
-6. Create an Texture array with the button.
-7. The different Texture arrays will be output to the designated folder with the filename followed by a suffix to indicate which type it is for, abledo, normal, AO.
-8. Create a new material with from the <b>"PBR_Texture_Array_URP_Lit_Shader"</b>. Add the different Texture arrays to the material.
-9. On a the gameobject with the material and renderer, place a <b>SelectW</b> component. Use the slider to switch between the different textures slices.
+6. <b>The textures needs to be the same resolution</b>
+7. Create an Texture array with the button.
+8. The different Texture arrays will be output to the designated folder with the filename followed by a suffix to indicate which type it is for, abledo, normal, AO.
+9. Create a new material with from the <b>"PBR_Texture_Array_URP_Lit_Shader"</b>. Add the different Texture arrays to the material.
+10. On a the gameobject with the material and renderer, place a <b>SelectW</b> component. Use the slider to switch between the different textures slices.
 
 That's it! Enjoy the improved performance!
 The shader included can be expanded on if you need other effects. 
+
+Feel free to come with sugesstions of features needed to make it more complete.
+I wanted a minimalistic tool to easily keep your texture organized and performant and also easy to update the Texture arrays you create.
