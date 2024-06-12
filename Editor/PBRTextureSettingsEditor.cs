@@ -2,7 +2,7 @@ using DragynGames.Editor.Texture;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(PBRTextureSettings))]
+[CustomEditor(typeof(TextureGroupSettings))]
 public class PBRTextureSettingsEditor : Editor
 {
     
@@ -10,10 +10,10 @@ public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
         
-        PBRTextureSettings settings = (PBRTextureSettings) target;
+        TextureGroupSettings groupSettings = (TextureGroupSettings) target;
         if (GUILayout.Button("Create Texture Array"))
         {
-            PBRTextureArrayCreator.Create(settings);
+            PBRTextureArrayCreator.Create(groupSettings);
         }
     }
 }

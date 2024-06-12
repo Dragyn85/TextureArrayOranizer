@@ -11,19 +11,19 @@ namespace DragynGames.Editor.Texture
         private static string path = "Assets/";
         private static string filename = "MyTextureArray";
 
-        public static PBRTextureSettings textureSettings;
+        public static TextureGroupSettings TextureGroupSettings;
 
         //private ReorderableList list;
         
-        public static void Create(PBRTextureSettings settings)
+        public static void Create(TextureGroupSettings groupSettings)
         {
-            textureSettings = settings;
+            TextureGroupSettings = groupSettings;
             OnWizardCreate();
         }
         static void OnWizardCreate()
         {
-            path = textureSettings.path;
-            filename = textureSettings.filename;
+            path = TextureGroupSettings.path;
+            filename = TextureGroupSettings.filename;
             if (string.IsNullOrEmpty(path) || string.IsNullOrEmpty(filename))
             {
                 Debug.LogError("You need to enter a path or filename in the texture settings asset.");
@@ -35,12 +35,12 @@ namespace DragynGames.Editor.Texture
         private static void ExtractAllTexturs()
         {
             OutputAlbido();
-            if (textureSettings.OutputNormals)
+            if (TextureGroupSettings.OutputNormals)
             {
                 OutputNormalMaps();
             }
 
-            if (textureSettings.IgnorePBRTexures)
+            if (TextureGroupSettings.IgnorePBRTexures)
             {
                 OutputSeparatePbr();
             }
@@ -53,7 +53,7 @@ namespace DragynGames.Editor.Texture
         private static void OutputPbrCombo()
         {
             List<Texture2D> combinedTextures = new();
-            foreach (var set in textureSettings.sets)
+            foreach (var set in TextureGroupSettings.sets)
             {
                 combinedTextures.Add(set.CombinedMetallicRoughnessAmbienOccolusion);
             }
@@ -64,7 +64,7 @@ namespace DragynGames.Editor.Texture
         private static void OutputAlbido()
         {
             List<Texture2D> AlbitoTextures = new List<Texture2D>();
-            foreach (var set in textureSettings.sets)
+            foreach (var set in TextureGroupSettings.sets)
             {
                 AlbitoTextures.Add(set.Albido);
             }
@@ -75,7 +75,7 @@ namespace DragynGames.Editor.Texture
         private static void OutputNormalMaps()
         {
             List<Texture2D> normalTextures = new List<Texture2D>();
-            foreach (var set in textureSettings.sets)
+            foreach (var set in TextureGroupSettings.sets)
             {
                 normalTextures.Add(set.Normal);
             }
@@ -89,7 +89,7 @@ namespace DragynGames.Editor.Texture
             List<Texture2D> roughnessTextures = new List<Texture2D>();
             List<Texture2D> AmbientOccolusion = new List<Texture2D>();
 
-            foreach (var set in textureSettings.sets)
+            foreach (var set in TextureGroupSettings.sets)
             {
                 var metTexture = new Texture2D(set.Metallic.width, set.Metallic.height);
                 metTexture.SetPixels(set.Metallic.GetPixels(0));
@@ -103,7 +103,7 @@ namespace DragynGames.Editor.Texture
             }
 
 
-            if (!textureSettings.CombinePbrTextures)
+            if (!TextureGroupSettings.CombinePbrTextures)
             {
                 ExportArray(metalicTextures, path, $"{filename}_Metallic");
                 ExportArray(roughnessTextures, path, $"{filename}_Rooughness");
@@ -112,7 +112,7 @@ namespace DragynGames.Editor.Texture
             else
             {
                 List<Texture2D> combinedTextures = new();
-                for (int i = 0; i < textureSettings.sets.Count; i++)
+                for (int i = 0; i < TextureGroupSettings.sets.Count; i++)
                 {
                     Texture2D combinedMetallicRoughnessAmbienOccolusion = new Texture2D(metalicTextures[0].width,
                         metalicTextures[0].height, TextureFormat.RGBA32, false);
@@ -136,7 +136,6 @@ namespace DragynGames.Editor.Texture
             }
         }
 
-        
         private static void ExportArray(List<Texture2D> textures, string path, string filename, bool isNormalMap = false)
         {
             if (textures == null || textures.Count == 0)
